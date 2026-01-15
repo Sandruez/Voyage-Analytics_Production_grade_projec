@@ -1,22 +1,22 @@
 import sys
-from voyage_analytics.exception import USvisaException
-from voyage_analytics.logger import logging
-from voyage_analytics.components.data_ingestion import DataIngestion
-from voyage_analytics.components.data_validation import DataValidation
-from voyage_analytics.components.data_transformation import DataTransformation
-from voyage_analytics.components.model_trainer import ModelTrainer
-from voyage_analytics.components.model_evaluation import ModelEvaluation
-from voyage_analytics.components.model_pusher import ModelPusher
+from us_visa.exception import USvisaException
+from us_visa.logger import logging
+from us_visa.components.data_ingestion import DataIngestion
+from us_visa.components.data_validation import DataValidation
+from us_visa.components.data_transformation import DataTransformation
+from us_visa.components.model_trainer import ModelTrainer
+from us_visa.components.model_evaluation import ModelEvaluation
+from us_visa.components.model_pusher import ModelPusher
 
 
-from voyage_analytics.entity.config_entity import (DataIngestionConfig,
+from us_visa.entity.config_entity import (DataIngestionConfig,
                                          DataValidationConfig,
                                          DataTransformationConfig,
                                          ModelTrainerConfig,
                                          ModelEvaluationConfig,
                                          ModelPusherConfig)
 
-from voyage_analytics.entity.artifact_entity import (DataIngestionArtifact,
+from us_visa.entity.artifact_entity import (DataIngestionArtifact,
                                             DataValidationArtifact,
                                             DataTransformationArtifact,
                                             ModelTrainerArtifact,

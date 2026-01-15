@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="voyage_analytics",
     version="0.0.0",
-    author="chandraprakash",
-    author_email="chandrapapr1501@gmial.com",
+    author="Sandruez",
+    author_email="chandraprakash1501@gmail.com",
     packages=find_packages()
 )

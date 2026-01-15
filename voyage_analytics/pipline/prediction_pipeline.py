@@ -3,11 +3,11 @@ import sys
 
 import numpy as np
 import pandas as pd
-from voyage_analytics.entity.config_entity import USvisaPredictorConfig
-from voyage_analytics.entity.s3_estimator import USvisaEstimator
-from voyage_analytics.exception import USvisaException
-from voyage_analytics.logger import logging
-from voyage_analytics.utils.main_utils import read_yaml_file
+from us_visa.entity.config_entity import USvisaPredictorConfig
+from us_visa.entity.s3_estimator import USvisaEstimator
+from us_visa.exception import USvisaException
+from us_visa.logger import logging
+from us_visa.utils.main_utils import read_yaml_file
 from pandas import DataFrame
 
 

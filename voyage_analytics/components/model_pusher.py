@@ -1,11 +1,11 @@
 import sys
 
-from voyage_analytics.cloud_storage.aws_storage import SimpleStorageService
-from voyage_analytics.exception import USvisaException
-from voyage_analytics.logger import logging
-from voyage_analytics.entity.artifact_entity import ModelPusherArtifact, ModelEvaluationArtifact
-from voyage_analytics.entity.config_entity import ModelPusherConfig
-from voyage_analytics.entity.s3_estimator import USvisaEstimator
+from us_visa.cloud_storage.aws_storage import SimpleStorageService
+from us_visa.exception import USvisaException
+from us_visa.logger import logging
+from us_visa.entity.artifact_entity import ModelPusherArtifact, ModelEvaluationArtifact
+from us_visa.entity.config_entity import ModelPusherConfig
+from us_visa.entity.s3_estimator import USvisaEstimator
 
 
 class ModelPusher:

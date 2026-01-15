@@ -1,11 +1,11 @@
 import boto3
-from voyage_analytics.configuration.aws_connection import S3Client
+from us_visa.configuration.aws_connection import S3Client
 from io import StringIO
 from typing import Union,List
 import os,sys
-from voyage_analytics.logger import logging
+from us_visa.logger import logging
 from mypy_boto3_s3.service_resource import Bucket
-from voyage_analytics.exception import USvisaException
+from us_visa.exception import USvisaException
 from botocore.exceptions import ClientError
 from pandas import DataFrame,read_csv
 import pickle
