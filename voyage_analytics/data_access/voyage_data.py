@@ -1,6 +1,6 @@
-from us_visa.configuration.mongo_db_connection import MongoDBClient
-from us_visa.constants import DATABASE_NAME
-from us_visa.exception import USvisaException
+from voyage_analytics.configuration.mongo_db_connection import MongoDBClient
+from voyage_analytics.constants import DATABASE_NAME
+from voyage_analytics.exception import VoyageAnalyticsException
 import pandas as pd
 import sys
 from typing import Optional
@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-class USvisaData:
+class VoyageData:
     """
     This class help to export entire mongo db record as pandas dataframe
     """
@@ -19,7 +19,7 @@ class USvisaData:
         try:
             self.mongo_client = MongoDBClient(database_name=DATABASE_NAME)
         except Exception as e:
-            raise USvisaException(e,sys)
+            raise VoyageAnalyticsException(e,sys)
         
 
     def export_collection_as_dataframe(self,collection_name:str,database_name:Optional[str]=None)->pd.DataFrame:
@@ -39,4 +39,4 @@ class USvisaData:
             df.replace({"na":np.nan},inplace=True)
             return df
         except Exception as e:
-            raise USvisaException(e,sys)
+            raise VoyageAnalyticsException(e,sys)

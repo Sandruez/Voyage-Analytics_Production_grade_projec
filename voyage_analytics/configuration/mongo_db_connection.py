@@ -1,10 +1,9 @@
 import sys
-
-from us_visa.exception import USvisaException
-from us_visa.logger import logging
+from voyage_analytics.exception import VoyageAnalyticsException
+from voyage_analytics.logger import logging
 
 import os
-from us_visa.constants import DATABASE_NAME, MONGODB_URL_KEY
+from voyage_analytics.constants import DATABASE_NAME, MONGODB_URL_KEY
 import pymongo
 import certifi
 
@@ -32,4 +31,4 @@ class MongoDBClient:
             self.database_name = database_name
             logging.info("MongoDB connection succesfull")
         except Exception as e:
-            raise USvisaException(e,sys)
+            raise VoyageAnalyticsException(e,sys)
