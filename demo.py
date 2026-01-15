@@ -1,4 +1,4 @@
-from us_visa.pipline.training_pipeline import TrainPipeline
+from voyage_analytics.pipline.training_pipeline import TrainPipeline
 
 obj = TrainPipeline()
 obj.run_pipeline()

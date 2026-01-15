@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="us_visa",
+    name="voyage_analytics",
     version="0.0.0",
-    author="Bappy",
-    author_email="entbappy73@gmail.com",
+    author="chandraprakash",
+    author_email="chandrapapr1501@gmial.com",
     packages=find_packages()
 )

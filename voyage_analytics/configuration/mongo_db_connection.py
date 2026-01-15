@@ -1,10 +1,10 @@
 import sys
 
-from us_visa.exception import USvisaException
-from us_visa.logger import logging
+from voyage_analytics.exception import USvisaException
+from voyage_analytics.logger import logging
 
 import os
-from us_visa.constants import DATABASE_NAME, MONGODB_URL_KEY
+from voyage_analytics.constants import DATABASE_NAME, MONGODB_URL_KEY
 import pymongo
 import certifi
 
