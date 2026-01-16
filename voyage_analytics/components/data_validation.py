@@ -7,26 +7,29 @@ from evidently.model_profile.sections import DataDriftProfileSection
 
 from pandas import DataFrame
 
-from us_visa.exception import USvisaException
-from us_visa.logger import logging
-from us_visa.utils.main_utils import read_yaml_file, write_yaml_file
-from us_visa.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
-from us_visa.entity.config_entity import DataValidationConfig
-from us_visa.constants import SCHEMA_FILE_PATH
+from voyage_analytics.exception import VoyageAnalyticsException
+from voyage_analytics.logger import logging
+from voyage_analytics.utils.main_utils import read_yaml_file, write_yaml_file
+from voyage_analytics.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
+from voyage_analytics.entity.config_entity import DataValidationConfig
+from voyage_analytics.entity.config_entity import SchemaConfig 
+
 
 
 class DataValidation:
-    def __init__(self, data_ingestion_artifact: DataIngestionArtifact, data_validation_config: DataValidationConfig):
+    def __init__(self, data_ingestion_artifact: DataIngestionArtifact, data_validation_config: DataValidationConfig,task:str):
         """
         :param data_ingestion_artifact: Output reference of data ingestion artifact stage
         :param data_validation_config: configuration for data validation
         """
         try:
             self.data_ingestion_artifact = data_ingestion_artifact
-            self.data_validation_config = data_validation_config
-            self._schema_config =read_yaml_file(file_path=SCHEMA_FILE_PATH)
+            self.drift_report_file_path = getattr(data_validation_config, task)
+            schema_file_path = getattr(SchemaConfig(), task)
+            self._schema_config =read_yaml_file(file_path=schema_file_path)
+            self.task=task
         except Exception as e:
-            raise USvisaException(e,sys)
+            raise VoyageAnalyticsException(e,sys)
 
     def validate_number_of_columns(self, dataframe: DataFrame) -> bool:
         """
@@ -41,7 +44,7 @@ class DataValidation:
             logging.info(f"Is required column present: [{status}]")
             return status
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
 
     def is_column_exist(self, df: DataFrame) -> bool:
         """
@@ -72,14 +75,14 @@ class DataValidation:
 
             return False if len(missing_categorical_columns)>0 or len(missing_numerical_columns)>0 else True
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e
 
     @staticmethod
     def read_data(file_path) -> DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
 
     def detect_dataset_drift(self, reference_df: DataFrame, current_df: DataFrame, ) -> bool:
         """
@@ -97,7 +100,7 @@ class DataValidation:
             report = data_drift_profile.json()
             json_report = json.loads(report)
 
-            write_yaml_file(file_path=self.data_validation_config.drift_report_file_path, content=json_report)
+            write_yaml_file(file_path=self.drift_report_file_path, content=json_report)
 
             n_features = json_report["data_drift"]["data"]["metrics"]["n_features"]
             n_drifted_features = json_report["data_drift"]["data"]["metrics"]["n_drifted_features"]
@@ -106,8 +109,8 @@ class DataValidation:
             drift_status = json_report["data_drift"]["data"]["metrics"]["dataset_drift"]
             return drift_status
         except Exception as e:
-            raise USvisaException(e, sys) from e
-
+            raise VoyageAnalyticsException(e, sys) from e
+        
     def initiate_data_validation(self) -> DataValidationArtifact:
         """
         Method Name :   initiate_data_validation
@@ -154,11 +157,24 @@ class DataValidation:
             else:
                 logging.info(f"Validation_error: {validation_error_msg}")
                 
-
-            data_validation_artifact = DataValidationArtifact(
+            
+            if self.task=="reg":
+                data_validation_artifact = DataValidationArtifactFlights(
                 validation_status=validation_status,
                 message=validation_error_msg,
-                drift_report_file_path=self.data_validation_config.drift_report_file_path
+                drift_report_file_path=self.drift_report_file_path
+            )
+            elif self.task=="class_":
+                data_validation_artifact = DataValidationArtifactUsers(
+                validation_status=validation_status,
+                message=validation_error_msg,
+                drift_report_file_path=self.drift_report_file_path
+            )
+            else:
+                data_validation_artifact = DataValidationArtifactHotels(
+                validation_status=validation_status,
+                message=validation_error_msg,
+                drift_report_file_path=self.drift_report_file_path
             )
 
             logging.info(f"Data validation artifact: {data_validation_artifact}")

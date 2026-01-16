@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 
+@dataclass
+class DataIngestionArtifact:
+    trained_file_path:str 
+    test_file_path:str
 
 @dataclass
 class DataIngestionArtifactUsers:
@@ -10,6 +14,11 @@ class DataIngestionArtifactUsers:
 class DataIngestionArtifactFlights:
     trained_file_path:str 
     test_file_path:str 
+
+@dataclass
+class DataIngestionArtifact:
+    trained_file_path:str 
+    test_file_path:str
 
 @dataclass
 class DataIngestionArtifactHotels:
@@ -36,6 +45,7 @@ class DataValidationArtifactHotels:
     validation_status:bool
     message: str
     drift_report_file_path: str
+
 
 
 

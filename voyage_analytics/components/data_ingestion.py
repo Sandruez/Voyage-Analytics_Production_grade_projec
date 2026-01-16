@@ -8,9 +8,7 @@ from voyage_analytics.entity.config_entity import DataIngestionConfig
 from voyage_analytics.entity.artifact_entity import DataIngestionArtifact
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
-from voyage_analytics.data_access.usvisa_data import VoyageData
-
-
+from voyage_analytics.data_access.voyage_data import VoyageData
 
 class DataIngestion:
     def __init__(self,data_ingestion_config:DataIngestionConfig=DataIngestionConfig()):
@@ -33,23 +31,52 @@ class DataIngestion:
         On Failure  :   Write an exception log and then raise an exception
         """
         try:
-            logging.info(f"Exporting data from mongodb")
-            usvisa_data = VoyageData()
-            dataframe = usvisa_data.export_collection_as_dataframe(collection_name=
-                                                                   self.data_ingestion_config.collection_name)
-            logging.info(f"Shape of dataframe: {dataframe.shape}")
-            feature_store_file_path  = self.data_ingestion_config.feature_store_file_path
-            dir_path = os.path.dirname(feature_store_file_path)
+            #Users data export
+            logging.info(f"Exporting Users data from mongodb")
+            voyage_data = VoyageData()
+            users_dataframe = voyage_data.export_collection_as_dataframe(collection_name=
+                                                                   self.data_ingestion_config.users_collection_name)
+            logging.info(f"Shape of users dataframe: {users_dataframe.shape}")
+            users_feature_store_file_path  = self.data_ingestion_config.users_feature_store_file_path
+            dir_path = os.path.dirname(users_feature_store_file_path)
             os.makedirs(dir_path,exist_ok=True)
-            logging.info(f"Saving exported data into feature store file path: {feature_store_file_path}")
-            dataframe.to_csv(feature_store_file_path,index=False,header=True)
-            return dataframe
+            logging.info(f"Saving exported users data into feature store file path: {users_feature_store_file_path}")
+            users_dataframe.to_csv(users_feature_store_file_path,index=False,header=True)
+            logging.info(f"Saved exported users data into feature store file path: {users_feature_store_file_path}")
+            
+            #flights data export
+            logging.info(f"Exporting flights data from mongodb")
+            voyage_data = VoyageData()      
+            flights_dataframe = voyage_data.export_collection_as_dataframe(collection_name=
+                                                                   self.data_ingestion_config.flights_collection_name)
+            logging.info(f"Shape of flights dataframe: {flights_dataframe.shape}")
+            flights_feature_store_file_path  = self.data_ingestion_config.flights_feature_store_file_path
+            dir_path = os.path.dirname(flights_feature_store_file_path)
+            os.makedirs(dir_path,exist_ok=True)
+            logging.info(f"Saving exported flights data into feature store file path: {flights_feature_store_file_path}")
+            flights_dataframe.to_csv(flights_feature_store_file_path,index=False,header=True)
+            logging.info(f"Saved exported flights data into feature store file path: {flights_feature_store_file_path}")
+            
+            #hotels data export
+            logging.info(f"Exporting hotels data from mongodb")
+            voyage_data = VoyageData()
+            hotels_dataframe = voyage_data.export_collection_as_dataframe(collection_name=
+                                                                   self.data_ingestion_config.hotels_collection_name)
+            logging.info(f"Shape of hotels dataframe: {hotels_dataframe.shape}")
+            hotels_feature_store_file_path  = self.data_ingestion_config.hotels_feature_store_file_path
+            dir_path = os.path.dirname(hotels_feature_store_file_path)
+            os.makedirs(dir_path,exist_ok=True)
+            logging.info(f"Saving exported hotels data into feature store file path: {hotels_feature_store_file_path}")
+            hotels_dataframe.to_csv(hotels_feature_store_file_path,index=False,header=True)
+            logging.info(f"Saved exported hotels data into feature store file path: {hotels_feature_store_file_path}")
+        
+            return users_dataframe, flights_dataframe, hotels_dataframe
 
         except Exception as e:
             raise VoyageAnalyticsException(e,sys)
         
 
-    def split_data_as_train_test(self,dataframe: DataFrame) ->None:
+    def split_data_as_train_test(self,dataframe: DataFrame,dataframe_name: str,training_file_path: str,testing_file_path: str) ->None:
         """
         Method Name :   split_data_as_train_test
         Description :   This method splits the dataframe into train set and test set based on split ratio 
@@ -61,18 +88,18 @@ class DataIngestion:
 
         try:
             train_set, test_set = train_test_split(dataframe, test_size=self.data_ingestion_config.train_test_split_ratio)
-            logging.info("Performed train test split on the dataframe")
+            logging.info(f"Performed train test split on the : {dataframe_name} dataframe")
             logging.info(
                 "Exited split_data_as_train_test method of Data_Ingestion class"
             )
-            dir_path = os.path.dirname(self.data_ingestion_config.training_file_path)
+            dir_path = os.path.dirname(training_file_path)
             os.makedirs(dir_path,exist_ok=True)
             
-            logging.info(f"Exporting train and test file path.")
-            train_set.to_csv(self.data_ingestion_config.training_file_path,index=False,header=True)
-            test_set.to_csv(self.data_ingestion_config.testing_file_path,index=False,header=True)
+            logging.info(f"Exporting {dataframe_name} train and test file path.")
+            train_set.to_csv(training_file_path,index=False,header=True)
+            test_set.to_csv(testing_file_path,index=False,header=True)
 
-            logging.info(f"Exported train and test file path.")
+            logging.info(f"Exported {dataframe_name} train and test file path.")
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
         
@@ -90,22 +117,31 @@ class DataIngestion:
         logging.info("Entered initiate_data_ingestion method of Data_Ingestion class")
 
         try:
-            dataframe = self.export_data_into_feature_store()
+            users_dataframe, flights_dataframe, hotels_dataframe = self.export_data_into_feature_store()
 
             logging.info("Got the data from mongodb")
 
-            self.split_data_as_train_test(dataframe)
-
-            logging.info("Performed train test split on the dataset")
+            self.split_data_as_train_test(users_dataframe,"users",self.data_ingestion_config.users_training_file_path,self.data_ingestion_config.users_testing_file_path)
+            self.split_data_as_train_test(flights_dataframe,"flights",self.data_ingestion_config.flights_training_file_path,self.data_ingestion_config.flights_testing_file_path)
+            self.split_data_as_train_test(hotels_dataframe,"hotels",self.data_ingestion_config.hotels_training_file_path,self.data_ingestion_config.hotels_testing_file_path)
+            logging.info("Performed train test split on the datasets")
 
             logging.info(
                 "Exited initiate_data_ingestion method of Data_Ingestion class"
             )
 
-            data_ingestion_artifact = DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path,
-            test_file_path=self.data_ingestion_config.testing_file_path)
+            user_data_ingestion_artifact = DataIngestionArtifactUsers(trained_file_path=self.data_ingestion_config.users_training_file_path,
+            test_file_path=self.data_ingestion_config.users_testing_file_path)
+            logging.info(f"Data ingestion artifact: {user_data_ingestion_artifact}")
             
-            logging.info(f"Data ingestion artifact: {data_ingestion_artifact}")
-            return data_ingestion_artifact
+            flight_data_ingestion_artifact = DataIngestionArtifactflights(trained_file_path=self.data_ingestion_config.flights_training_file_path,
+            test_file_path=self.data_ingestion_config.flights_testing_file_path)
+            logging.info(f"Data ingestion artifact: {flight_data_ingestion_artifact}")
+
+            hotel_data_ingestion_artifact = DataIngestionArtifactHotels(trained_file_path=self.data_ingestion_config.hotels_training_file_path,
+            test_file_path=self.data_ingestion_config.hotels_testing_file_path) 
+            logging.info(f"Data ingestion artifact: {hotel_data_ingestion_artifact}")
+
+            return user_data_ingestion_artifact, flight_data_ingestion_artifact, hotel_data_ingestion_artifact
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e

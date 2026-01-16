@@ -21,6 +21,11 @@ FILE_NAME_flights: str = "flights.csv"
 FILE_NAME_HOTELS: str = "hotels.csv"
 MODEL_FILE_NAME = "model.pkl"
 
+SCHEMA_USERS_FILE_PATH = os.path.join("config", "users_schema.yaml")
+SCHEMA_Flights_FILE_PATH = os.path.join("config", "flights_schema.yaml")
+SCHEMA_HOTELS_FILE_PATH = os.path.join("config", "hotels_schema.yaml")
+
+
 
 TARGET_COLUMN_USERS = "gender"
 TARGET_COLUMN_flights = "price"

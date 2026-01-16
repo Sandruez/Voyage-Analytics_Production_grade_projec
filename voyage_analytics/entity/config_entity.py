@@ -41,6 +41,12 @@ class DataIngestionConfig:
     hotels_collection_name:str = DATA_INGESTION_HOTELS_COLLECTION_NAME
 
 
+@dataclass
+class SchemaConfig:
+    class_: str = USERS_SCHEMA_FILE_PATH
+    reg: str = FLIGHTS_SCHEMA_FILE_PATH
+    recomend: str = HOTELS_SCHEMA_FILE_PATH
+
 
 @dataclass
 class DataValidationConfig:
@@ -51,7 +57,9 @@ class DataValidationConfig:
                                                DATA_VALIDATION_CLASS_DRIFT_REPORT_FILE_NAME)
     recumend_drift_report_file_path: str = os.path.join(data_validation_dir, DATA_VALIDATION_DRIFT_REPORT_DIR,
                                                DATA_VALIDATION_RECUMEND_DRIFT_REPORT_FILE_NAME)
-    
+    reg: str =reg_drift_report_file_path
+    class_: str =class_drift_report_file_path
+    recomend: str =recumend_drift_report_file_path
 
 
 
