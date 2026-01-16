@@ -7,14 +7,15 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder, PowerTransformer,MinMaxScaler,LabelEncoder
 from sklearn.compose import ColumnTransformer
 
-from voyage_analytics .constants import TARGET_COLUMN, SCHEMA_FILE_PATH, CURRENT_YEAR
+from voyage_analytics.constants import TARGET_COLUMN, SCHEMA_FILE_PATH, CURRENT_YEAR
+from voyage_analytics.constants import Users_TARGET_COLUMN, Flights_TARGET_COLUMN, HOTELS_TARGET_COLUMN
 from voyage_analytics.entity.config_entity import DataTransformationConfig
 from voyage_analytics.entity.artifact_entity import DataTransformationArtifact, DataIngestionArtifact, DataValidationArtifact
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 from voyage_analytics.utils.main_utils import save_object, save_numpy_array_data, read_yaml_file, drop_columns
 from voyage_analytics.entity.estimator import TargetValueMapping
-
+from voyage_analytics.entity.config_entity import SchemaConfig
 
 
 class DataTransformation:
@@ -31,26 +32,26 @@ class DataTransformation:
             self.data_validation_artifact = data_validation_artifact
             self._schema_config = read_yaml_file(file_path=SCHEMA_FILE_PATH)
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
 
     @staticmethod
     def read_data(file_path) -> pd.DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
 
     
-    def get_data_transformer_object(self) -> Pipeline:
+    def get_user_data_transformer_object(self) -> Pipeline:
         """
-        Method Name :   get_data_transformer_object
+        Method Name :   get_user_data_transformer_object
         Description :   This method creates and returns a data transformer object for the data
         
         Output      :   data transformer object is created and returned 
         On Failure  :   Write an exception log and then raise an exception
         """
         logging.info(
-            "Entered get_data_transformer_object method of DataTransformation class"
+            "Entered get_user_data_transformer_object method of DataTransformation class"
         )
 
         try:
@@ -84,12 +85,106 @@ class DataTransformation:
             logging.info("Created preprocessor object from ColumnTransformer")
 
             logging.info(
-                "Exited get_data_transformer_object method of DataTransformation class"
+                "Exited get_user_data_transformer_object method of DataTransformation class"
             )
             return preprocessor
 
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e
+
+    def get_flight_data_transformer_object(self) -> Pipeline:
+        """
+        Method Name :   get_flight_data_transformer_object
+        Description :   This method creates and returns a data transformer object for the data
+        
+        Output      :   data transformer object is created and returned 
+        On Failure  :   Write an exception log and then raise an exception
+        """
+        try:
+            logging.info("Got numerical cols from schema config")
+
+            numeric_transformer = StandardScaler()
+            oh_transformer = OneHotEncoder()
+            ordinal_encoder = OrdinalEncoder()
+
+            logging.info("Initialized StandardScaler, OneHotEncoder, OrdinalEncoder")
+
+            oh_columns = self._schema_config['oh_columns']
+            or_columns = self._schema_config['or_columns']
+            transform_columns = self._schema_config['transform_columns']
+            num_features = self._schema_config['num_features']
+
+            logging.info("Initialize PowerTransformer")
+
+            transform_pipe = Pipeline(steps=[
+                ('transformer', PowerTransformer(method='yeo-johnson'))
+            ])
+            preprocessor = ColumnTransformer(
+                [
+                    ("OneHotEncoder", oh_transformer, oh_columns),
+                    ("Ordinal_Encoder", ordinal_encoder, or_columns),
+                    ("Transformer", transform_pipe, transform_columns),
+                    ("StandardScaler", numeric_transformer, num_features)
+                ]
+            )
+
+            logging.info("Created preprocessor object from ColumnTransformer")
+
+            logging.info(
+                "Exited get_flight_data_transformer_object method of DataTransformation class"
+            )
+            return preprocessor
+
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e
+
+    def get_hotel_data_transformer_object(self) -> Pipeline:
+        """
+        Method Name :   get_hotel_data_transformer_object
+        Description :   This method creates and returns a data transformer object for the data
+        
+        Output      :   data transformer object is created and returned 
+        On Failure  :   Write an exception log and then raise an exception
+        """
+
+        try:
+            logging.info("Got numerical cols from schema config")
+
+            numeric_transformer = StandardScaler()
+            oh_transformer = OneHotEncoder()
+            ordinal_encoder = OrdinalEncoder()
+
+            logging.info("Initialized StandardScaler, OneHotEncoder, OrdinalEncoder")
+
+            oh_columns = self._schema_config['oh_columns']
+            or_columns = self._schema_config['or_columns']
+            transform_columns = self._schema_config['transform_columns']
+            num_features = self._schema_config['num_features']
+
+            logging.info("Initialize PowerTransformer")
+
+            transform_pipe = Pipeline(steps=[
+                ('transformer', PowerTransformer(method='yeo-johnson'))
+            ])
+            preprocessor = ColumnTransformer(
+                [
+                    ("OneHotEncoder", oh_transformer, oh_columns),
+                    ("Ordinal_Encoder", ordinal_encoder, or_columns),
+                    ("Transformer", transform_pipe, transform_columns),
+                    ("StandardScaler", numeric_transformer, num_features)
+                ]
+            )
+
+            logging.info("Created preprocessor object from ColumnTransformer")
+
+            logging.info(
+                "Exited get_hotel_data_transformer_object method of DataTransformation class"
+            )
+            return preprocessor
+
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e
+        
 
     def initiate_data_transformation(self, ) -> DataTransformationArtifact:
         """
@@ -209,4 +304,4 @@ class DataTransformation:
                 raise Exception(self.data_validation_artifact.message)
 
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e

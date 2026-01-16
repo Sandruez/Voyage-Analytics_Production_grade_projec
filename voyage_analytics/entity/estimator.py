@@ -2,10 +2,7 @@ import sys
 
 from pandas import DataFrame
 from sklearn.pipeline import Pipeline
-
-from us_visa.exception import USvisaException
-from us_visa.logger import logging
-
+from voyage_analytics.exception import voyageAnalyticsException
 
 
 class TargetValueMapping:
