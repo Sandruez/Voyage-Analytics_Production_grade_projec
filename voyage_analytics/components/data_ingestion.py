@@ -5,7 +5,7 @@ from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 
 from voyage_analytics.entity.config_entity import DataIngestionConfig
-from voyage_analytics.entity.artifact_entity import DataIngestionArtifact
+from voyage_analytics.entity.artifact_entity import DataIngestionArtifact, DataIngestionArtifactUsers, DataIngestionArtifactFlights, DataIngestionArtifactHotels
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 from voyage_analytics.data_access.voyage_data import VoyageData
@@ -21,8 +21,9 @@ class DataIngestion:
             raise VoyageAnalyticsException(e,sys)
         
 
-    
-    def export_data_into_feature_store(self)->DataFrame:
+
+
+    def export_data_into_feature_store(self)->tuple[DataFrame, DataFrame, DataFrame]:
         """
         Method Name :   export_data_into_feature_store
         Description :   This method exports data from mongodb to csv file
@@ -105,8 +106,9 @@ class DataIngestion:
         
 
 
-    
-    def initiate_data_ingestion(self) ->DataIngestionArtifact:
+
+
+    def initiate_data_ingestion(self) -> DataIngestionArtifact:
         """
         Method Name :   initiate_data_ingestion
         Description :   This method initiates the data ingestion components of training pipeline 
@@ -132,16 +134,21 @@ class DataIngestion:
 
             user_data_ingestion_artifact = DataIngestionArtifactUsers(trained_file_path=self.data_ingestion_config.users_training_file_path,
             test_file_path=self.data_ingestion_config.users_testing_file_path)
-            logging.info(f"Data ingestion artifact: {user_data_ingestion_artifact}")
+            logging.info(f"User Data ingestion artifact: {user_data_ingestion_artifact}")
             
             flight_data_ingestion_artifact = DataIngestionArtifactflights(trained_file_path=self.data_ingestion_config.flights_training_file_path,
             test_file_path=self.data_ingestion_config.flights_testing_file_path)
-            logging.info(f"Data ingestion artifact: {flight_data_ingestion_artifact}")
-
+            logging.info(f"Flight Data ingestion artifact: {flight_data_ingestion_artifact}")   
             hotel_data_ingestion_artifact = DataIngestionArtifactHotels(trained_file_path=self.data_ingestion_config.hotels_training_file_path,
             test_file_path=self.data_ingestion_config.hotels_testing_file_path) 
-            logging.info(f"Data ingestion artifact: {hotel_data_ingestion_artifact}")
+            logging.info(f"Hotel Data ingestion artifact: {hotel_data_ingestion_artifact}")
 
-            return user_data_ingestion_artifact, flight_data_ingestion_artifact, hotel_data_ingestion_artifact
+            data_ingestion_artifact = DataIngestionArtifact(
+                user_data_ingestion_artifact=user_data_ingestion_artifact,
+                flight_data_ingestion_artifact=flight_data_ingestion_artifact,
+                hotel_data_ingestion_artifact=hotel_data_ingestion_artifact
+            )
+            return data_ingestion_artifact
+
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e

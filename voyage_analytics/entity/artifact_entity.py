@@ -1,9 +1,5 @@
 from dataclasses import dataclass
 
-@dataclass
-class DataIngestionArtifact:
-    trained_file_path:str 
-    test_file_path:str
 
 @dataclass
 class DataIngestionArtifactUsers:
@@ -15,15 +11,20 @@ class DataIngestionArtifactFlights:
     trained_file_path:str 
     test_file_path:str 
 
-@dataclass
-class DataIngestionArtifact:
-    trained_file_path:str 
-    test_file_path:str
+
 
 @dataclass
 class DataIngestionArtifactHotels:
     trained_file_path:str 
     test_file_path:str
+
+
+@dataclass
+class DataIngestionArtifact:
+    user_data_ingestion_artifact:DataIngestionArtifactUsers
+    flight_data_ingestion_artifact:DataIngestionArtifactFlights
+    hotel_data_ingestion_artifact:DataIngestionArtifactHotels
+
 
 
 @dataclass
@@ -46,7 +47,11 @@ class DataValidationArtifactHotels:
     message: str
     drift_report_file_path: str
 
-
+@dataclass
+class DataValidationArtifact:
+    user_data_validation_artifact:DataValidationArtifactUsers
+    flight_data_validation_artifact:DataValidationArtifactFlights
+    hotel_data_validation_artifact:DataValidationArtifactHotels
 
 
 @dataclass
@@ -67,6 +72,11 @@ class DataTransformationArtifactHotels:
     transformed_train_file_path:str
     transformed_test_file_path:str  
 
+@classdataclass
+class DataTransformationArtifact:
+    user_data_transformation_artifact:DataTransformationArtifactUsers
+    flight_data_transformation_artifact:DataTransformationArtifactFlights
+    hotel_data_transformation_artifact:DataTransformationArtifactHotels 
 
 @dataclass
 class ClassificationMetricArtifact:

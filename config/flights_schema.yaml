@@ -24,11 +24,14 @@ categorical_columns:
   - agency
   - date
 
-# columns to be removed
+
+# day (day name) should be derieved from date
+#then date column can be removed 
 
 drop_columns:
   - travelCode
   - userCode
+  - date
 
 # for data transformation
 oh_columns:
@@ -38,22 +41,8 @@ oh_columns:
   - agency
   - day
 
+scaler_columns:
+  - time
+  - distance
 
 
-
-num_features:
-  - no_of_employees
-  - prevailing_wage
-  - company_age
-
-or_columns:
-  - has_job_experience
-  - requires_job_training
-  - full_time_position
-  - education_of_employee
-
-
-
-transform_columns:
-  - no_of_employees
-  - company_age
