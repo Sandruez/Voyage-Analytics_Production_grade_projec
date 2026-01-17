@@ -69,10 +69,10 @@ class DataTransformationArtifactFlights:
 @dataclass
 class DataTransformationArtifactHotels:
     transformed_object_file_path:str 
-    transformed_train_file_path:str
-    transformed_test_file_path:str  
+    transformed_hotel_data_profile_df_file_path:str
+    transformed_hotel_features_matrix_arr_file_path:str
 
-@classdataclass
+@dataclass
 class DataTransformationArtifact:
     user_data_transformation_artifact:DataTransformationArtifactUsers
     flight_data_transformation_artifact:DataTransformationArtifactFlights

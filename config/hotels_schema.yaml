@@ -33,7 +33,7 @@ label_encode_columns:
   - place
 
 min_max_scale_columns:
-  - place_encoded
+  - place
   - price
   - days
   - popularity

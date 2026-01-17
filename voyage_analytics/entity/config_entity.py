@@ -80,9 +80,9 @@ class DataTransformationConfig:
     transformed_reg_test_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK1,
                                                    TEST_FILE_NAME.replace("csv", "npy"))    
     
-    transformed_recumend_train_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK3,
-                                                    TRAIN_FILE_NAME.replace("csv", "npy"))
-    transformed_recumend_test_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK3,
+    transformed_rec_hotel_data_profile_df_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK3,
+                                                    TRAIN_FILE_NAME)
+    transformed_rec_hotel_features_matrix_arr_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK3,
                                                    TEST_FILE_NAME.replace("csv", "npy"))
     
     transformed_reg_object_file_path: str = os.path.join(data_transformation_dir,

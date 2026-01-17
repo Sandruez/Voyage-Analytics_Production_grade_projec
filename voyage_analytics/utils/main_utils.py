@@ -128,3 +128,16 @@ def save_df_as_csv(file_path: str, df: DataFrame) -> None:
         logging.info(f"DataFrame saved as CSV at: {file_path}")
     except Exception as e:
         raise VoyageAnalyticsException(e, sys) from e
+    
+def load_csv_data(file_path: str) -> DataFrame:
+    """
+    Load CSV data into DataFrame
+    file_path: str location of CSV file to load
+    return: DataFrame loaded from CSV
+    """
+    try:
+        df = pd.read_csv(file_path)
+        logging.info(f"CSV data loaded into DataFrame from: {file_path}")
+        return df
+    except Exception as e:
+        raise VoyageAnalyticsException(e, sys) from e

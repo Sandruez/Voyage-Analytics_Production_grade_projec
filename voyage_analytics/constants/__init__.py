@@ -19,6 +19,7 @@ TEST_FILE_NAME: str = "test.csv"
 FILE_NAME_USERS: str = "user.csv"
 FILE_NAME_flights: str = "flights.csv"
 FILE_NAME_HOTELS: str = "hotels.csv"
+
 MODEL_FILE_NAME = "model.pkl"
 
 SCHEMA_USERS_FILE_PATH = os.path.join("config", "users_schema.yaml")
@@ -48,6 +49,8 @@ HOTELS_FILE_NAME: str = "hotels.csv"
 TASK1: str = "regression"
 TASK2: str = "classification"
 TASK3: str = "recumendation"
+
+
 
 AWS_ACCESS_KEY_ID_ENV_KEY = "AWS_ACCESS_KEY_ID"
 AWS_SECRET_ACCESS_KEY_ENV_KEY = "AWS_SECRET_ACCESS_KEY"

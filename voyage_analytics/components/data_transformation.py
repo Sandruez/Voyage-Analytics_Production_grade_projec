@@ -130,9 +130,8 @@ class DataTransformation:
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
         
-# def initiate_data_transformation(self, ) -> DataTransformationArtifact:
-    
-    def classify_data_transformation(self, ) -> DataTransformationArtifact:
+
+    def classify_data_transformation(self, ) ->DataTransformationArtifactUsers:
         """
         Method Name :   initiate_data_transformation
         Description :   This method initiates the data transformation component for the pipeline 
@@ -141,7 +140,7 @@ class DataTransformation:
         On Failure  :   Write an exception log and then raise an exception
         """
         try:
-            if self.flight_data_validation_artifact.validation_status:
+            if self.user_data_validation_artifact.validation_status:
                 logging.info("Starting user data transformation")
                 logging.info("NO any preprocessor object")
 
@@ -185,33 +184,90 @@ class DataTransformation:
                 target_feature_train_final = target_feature_train_df
                 input_feature_test_final = input_feature_test_df
                 target_feature_test_final = target_feature_test_df
+                
+                train_final_df = pd.concat([input_feature_train_final, target_feature_train_final], axis=1)
+                test_final_df = pd.concat([input_feature_test_final, target_feature_test_final], axis=1)
 
                 logging.info("Created train and test dataframes")
 
-                train_arr = np.c_[
-                    input_feature_train_final, np.array(target_feature_train_final)
-                ]
-
-                test_arr = np.c_[
-                    input_feature_test_final, np.array(target_feature_test_final)
-                ]
-
-                save_object(self.data_transformation_config.transformed_reg_object_file_path, preprocessor)
-                save_numpy_array_data(self.data_transformation_config.transformed_reg_train_file_path, array=train_arr)
-                save_numpy_array_data(self.data_transformation_config.transformed_reg_test_file_path, array=test_arr)
-
-                logging.info("Saved the preprocessor object")
+                save_df_as_csv(self.data_transformation_config.transformed_class_train_file_path, train_final_df)
+                save_df_as_csv(self.data_transformation_config.transformed_class_test_file_path, test_final_df)
+                logging.info("Saved the train and test dataframes as csv files")
 
                 logging.info(
-                    "Exited initiate_data_transformation method of Data_Transformation class"
+                    "Exited classify_data_tranformation method of Data_Transformation class"
                 )
 
-                data_transformation_artifact_flights = DataTransformationArtifactFlights(
-                    transformed_object_file_path=self.data_transformation_config.transformed_reg_object_file_path,
-                    transformed_train_file_path=self.data_transformation_config.transformed_reg_train_file_path,
-                    transformed_test_file_path=self.data_transformation_config.transformed_reg_test_file_path
+                data_transformation_artifact_user = DataTransformationArtifactUser(
+                    transformed_train_file_path=self.data_transformation_config.transformed_class_train_file_path,
+                    transformed_test_file_path=self.data_transformation_config.transformed_class_test_file_path
                 )
-                return data_transformation_artifact_flights
+                return data_transformation_artifact_user
+            else:
+                raise Exception(self.data_validation_artifact.message)
+
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e
+    
+
+
+    def recommendation_data_transformation(self, ) -> DataTransformationArtifactHotels:
+        """
+        Method Name :   recommendation_data_transformation
+        Description :   recommendation data transformation component for the pipeline 
+        
+        Output      :   artifact of hotel data transformation is created and returned
+        On Failure  :   Write an exception log and then raise an exception
+        """
+        try:
+            if self.hotel_data_validation_artifact.validation_status:
+                logging.info("Starting hotel data transformation")
+                preprocessor = self.get_hotel_data_transformer_object()
+                logging.info("Got the preprocessor object")
+
+                train_df = DataTransformation.read_data(file_path=self.hotel_data_ingestion_artifact.trained_file_path)
+                test_df = DataTransformation.read_data(file_path=self.hotel_data_ingestion_artifact.test_file_path)
+
+
+                logging.info("Got train  and test dataframe for hotel data")
+                
+                whole_df = pd.concat([train_df, test_df], axis=0)
+                
+                whole_df=drop_columns(df=whole_df, cols=self.hotel_schema_config['drop_columns'])
+                logging.info("Dropped dropable column from whole dataframe")
+                
+                hotel_data_profiles = whole_df.groupby('name').agg({
+                    'place': 'first',
+                    'price': 'mean',
+                    'days': 'mean',
+                    'total':'count'
+                }).rename(columns={'total':'popularity'}).reset_index()
+
+                logging.info("Created hotel data profiles based on name")
+                
+                hotel_features_matrix = preprocessor.fit_transform(hotel_data_profiles.drop(columns=['name'], axis=1))
+                
+                logging.info("created hotel features matrix using preprocessor object")
+
+                hotel_data_profile_df = hotel_data_profiles.copy()
+                hotel_features_matrix_arr = hotel_features_matrix
+
+                save_object(self.data_transformation_config.transformed_recumend_object_file_path, preprocessor)
+                save_dataframe_as_csv(self.data_transformation_config.transformed_rec_hotel_data_profile_df_file_path, array=hotel_data_profile_df)
+                save_numpy_array_data(self.data_transformation_config.transformed_rec_hotel_features_matrix_arr_file_path, array=hotel_features_matrix_arr)
+
+                logging.info("Saved the preprocessor object and hotel data profile dataframe and hotel features matrix array")
+
+                logging.info(
+                    "Exited  recommendation_data_transformation method of Data_Transformation class"
+                )
+
+                DataTransformationArtifactHotels = DataTransformationArtifactHotels (
+                    transformed_object_file_path=self.data_transformation_config.transformed_recumend_object_file_path,
+                    transformed_hotel_data_profile_df_file_path=self.data_transformation_config.transformed_rec_hotel_data_profile_df_file_path,
+                    transformed_hotel_features_matrix_arr_file_path=self.data_transformation_config.transformed_rec_hotel_features_matrix_arr_file_path
+                )
+                return DataTransformationArtifactHotels
             else:
                 raise Exception(self.data_validation_artifact.message)
 
@@ -219,36 +275,8 @@ class DataTransformation:
             raise VoyageAnalyticsException(e, sys) from e
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    def reg_data_transformation(self, ) -> DataTransformationArtifact:
+
+    def reg_data_transformation(self, ) -> DataTransformationArtifactFlights:
         """
         Method Name :   initiate_data_transformation
         Description :   This method initiates the data transformation component for the pipeline 
@@ -346,3 +374,34 @@ class DataTransformation:
 
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
+    
+    
+    
+    
+    def initiate_data_transformation(self, ) -> DataTransformationArtifact:
+        """_summary_
+        Method Name :   initiate_data_transformation
+        Returns:
+            DataTransformationArtifact: 
+        """
+        
+        try:
+            user_data_transformation_artifact = self.classify_data_transformation()
+            flight_data_transformation_artifact = self.reg_data_transformation()
+            hotel_data_transformation_artifact = self.recommendation_data_transformation()
+            
+            data_transformation_artifact = DataTransformationArtifact(
+                user_data_transformation_artifact=user_data_transformation_artifact,
+                flight_data_transformation_artifact=flight_data_transformation_artifact,
+                hotel_data_transformation_artifact=hotel_data_transformation_artifact
+            )
+            logging.info(
+                "Created and returned data transformation artifact"
+            )
+            return data_transformation_artifact 
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e
+        
+        
+        
+    
