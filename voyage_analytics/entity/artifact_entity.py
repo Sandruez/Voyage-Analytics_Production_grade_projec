@@ -80,16 +80,17 @@ class DataTransformationArtifact:
 
 @dataclass
 class ClassificationMetricArtifact:
-    f1_score:float
+    accuracy_score:float
     precision_score:float
     recall_score:float
+    f1_score:float
     
 @dataclass
 class RegressionMetricArtifact:
     r2_score:float
-    mean_absolute_error:float
-    mean_squared_error:float
+    mse:float
     root_mean_squared_error:float
+    mae:float
 
 @dataclass
 class RecumendationMetricArtifact:
