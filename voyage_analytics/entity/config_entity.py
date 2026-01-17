@@ -71,9 +71,9 @@ class DataTransformationConfig:
 
 
     transformed_class_train_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK2,
-                                                    TRAIN_FILE_NAME.replace("csv", "npy"))
+                                                    TRAIN_FILE_NAME)
     transformed_class_test_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK2,
-                                                   TEST_FILE_NAME.replace("csv", "npy"))
+                                                   TEST_FILE_NAME)
     
     transformed_reg_train_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,TASK1,
                                                     TRAIN_FILE_NAME.replace("csv", "npy"))

@@ -113,3 +113,18 @@ def drop_columns(df: DataFrame, cols: list)-> DataFrame:
         return df
     except Exception as e:
         raise VoyageAnalyticsException(e, sys) from e
+    
+    
+def save_df_as_csv(file_path: str, df: DataFrame) -> None:
+    """
+    Save DataFrame as CSV file
+    file_path: str location of file to save
+    df: DataFrame to save
+    """
+    try:
+        dir_path = os.path.dirname(file_path)
+        os.makedirs(dir_path, exist_ok=True)
+        df.to_csv(file_path, index=False)
+        logging.info(f"DataFrame saved as CSV at: {file_path}")
+    except Exception as e:
+        raise VoyageAnalyticsException(e, sys) from e

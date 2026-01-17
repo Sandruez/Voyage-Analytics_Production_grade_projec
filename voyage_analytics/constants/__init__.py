@@ -28,7 +28,7 @@ SCHEMA_HOTELS_FILE_PATH = os.path.join("config", "hotels_schema.yaml")
 
 
 TARGET_COLUMN_USERS = "gender"
-TARGET_COLUMN_flights = "price"
+TARGET_COLUMN_FLIGHTS = "price"
 TARGET_COLUMN_HOTELS = ""
 CURRENT_YEAR = date.today().year
 
