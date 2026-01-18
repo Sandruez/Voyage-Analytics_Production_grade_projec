@@ -84,3 +84,42 @@ class ClassificationModel:
 
     def __str__(self):
         return f"{type(self.trained_model_object).__name__}()"
+    
+    
+class RecumendationModel:
+    def __init__(self,trained_model_object: object, hotel_profiles: DataFrame, hotel_features_matrix: np.ndarrays):
+        """
+        :param preprocessing_object: Input Object of preprocesser
+        :param trained_model_object: Input Object of trained model 
+        """
+        self.trained_model_object = trained_model_object
+        self.hotel_profiles = hotel_profiles
+        self.hotel_features_matrix = hotel_features_matrix
+
+    def predict(self, hotel_name: str) -> DataFrame:
+        """
+        it performs prediction
+        """
+        logging.info("Entered predict method of RecumendationModel class")
+
+        try:
+                    # 1. Find the index of the hotel
+            try:
+                idx = hotel_profiles[hotel_profiles['name'] == hotel_name].index[0]
+            except IndexError:
+                return "Hotel not found."
+
+            # 2. Find nearest neighbors
+            distances, indices = trained_model_object.kneighbors([hotel_features_matrix[idx]])
+
+            # 3. Return results (Skip first one because it's the hotel itself)
+            similar_indices = indices[0][1:]
+
+            return hotel_profiles.iloc[similar_indices][['name', 'place', 'price', 'popularity']]
+            logging.info("Using the trained model to get predictions")
+        
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e
+        
+        
+   

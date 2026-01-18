@@ -13,8 +13,15 @@ from voyage_analytics.logger import logging
 from voyage_analytics.utils.main_utils import load_numpy_array_data, read_yaml_file, load_object, save_object,load_csv_data
 from voyage_analytics.entity.config_entity import ModelTrainerConfig
 from voyage_analytics.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact,RegressionMetricArtifact,ClassificationMetricArtifact,RecumendationMetricArtifact
+
 from voyage_analytics.entity.estimator import RegModel
+from voyage_analytics.entity.estimator import ClassificationModel
+
 from voyage_analytics.constants import TARGET_COLUMN_USERS
+from sklearn.pipeline import make_pipeline
+from sklearn.neighbors import NearestNeighbors
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import CountVectorizer
 
 class ModelTrainer:
     def __init__(self, data_transformation_artifact: DataTransformationArtifact,
@@ -98,7 +105,7 @@ class ModelTrainer:
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
 
-    def get_recommendation_model_object_and_report(self, train: np.array, test: np.array) -> Tuple[object, object]:
+    def get_recommendation_model_object_and_report(self, train_arr: np.array) -> Tuple[object, object]:
         """
         Method Name :   get_recommendation_model_object_and_report
         Description :   This function uses neuro_mf to get the best model object and report of the best model
@@ -107,27 +114,46 @@ class ModelTrainer:
         On Failure  :   Write an exception log and then raise an exception
         """
         try:
-            logging.info("Using neuro_mf to get best model object and report")
-            model_factory = ModelFactory(model_config_path=self.model_trainer_config.model_config_file_path)
+            logging.info("")
             
-            x_train, y_train, x_test, y_test = train[:, :-1], train[:, -1], test[:, :-1], test[:, -1]
+            profile_matrix_data = train_arr
 
-            best_model_detail = model_factory.get_best_model(
-                X=x_train,y=y_train,base_accuracy=self.model_trainer_config.expected_accuracy
-            )
-            model_obj = best_model_detail.best_model
-
-            y_pred = model_obj.predict(x_test)
-            metric_artifact = RecumendationMetricArtifact(
-                recall=recall_score(y_true=y_test, y_pred=y_pred),
-                precision=precision_score(y_true=y_test, y_pred=y_pred),
-                f1-score=f1_score(y_true=y_test, y_pred=y_pred),
-            )
-            return best_model_detail, metric_artifact
+            model = NearestNeighbors(n_neighbors=7, metric='manhattan',algorithm='brute')
+            model.fit(profile_matrix_data)
+            logging.info("trained the recommendation model")
+            
+            
+            return model, None
         
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
         
+
+   def initiate_recommendation_model_trainer(self, ) -> ModelTrainerArtifactRecommendation: 
+        logging.info("Entered initiate_recommendation_model_trainer method of ModelTrainer class")
+        """
+        Method Name :   initiate_recommendation_model_trainer
+        Description :   This function initiates a model trainer steps
+        
+        Output      :   Returns model trainer artifact
+        On Failure  :   Write an exception log and then raise an exception
+        """
+        try:
+            profile_matrix_arr = load_numpy_array_data(file_path=self.hotel_data_transformation_artifact.transformed_hotel_features_matrix_arr_file_path)
+            
+            best_model ,_ = self.get_recommendation_model_object_and_report(train=profile_matrix_arr)
+            
+            logging.info("Created best model file path.")
+            
+            
+            save_object(self.model_trainer_config.trained_recommendation_model_file_path , best_model)   
+            model_trainer_artifact = ModelTrainerArtifactRecommendation(
+                trained_model_file_path=self.model_trainer_config.trained_recommendation_model_file_path,
+                metric_artifact=None,
+            )
+            logging.info(f"Model trainer artifact: {model_trainer_artifact}")
+            return model_trainer_artifact
+
 
    def initiate_classification_model_trainer(self, ) -> ModelTrainerArtifactClassification:
         logging.info("Entered initiate_classification_model_trainer method of ModelTrainer class")
@@ -233,3 +259,28 @@ class ModelTrainer:
             return model_trainer_artifact
         except Exception as e:
             raise USvisaException(e, sys) from e
+        
+        
+    def initiate_model_trainer(self) -> ModelTrainerArtifact:
+        logging.info("Entered initiate_model_trainer method of ModelTrainer class")
+        """
+        Method Name :   initiate_model_trainer
+        Description :   This function initiates a model trainer steps
+        
+        Output      :   Returns model trainer artifact
+        On Failure  :   Write an exception log and then raise an exception
+        """
+        try:
+            reg_model_trainer_artifact = self.initiate_reg_model_trainer()
+            class_model_trainer_artifact = self.initiate_classification_model_trainer()
+            recumendation_model_trainer_artifact = self.initiate_recommendation_model_trainer()
+            
+            model_trainer_artifact = ModelTrainerArtifact(
+                model_trainer_artifact_regression=reg_model_trainer_artifact,
+                model_trainer_artifact_classification=class_model_trainer_artifact,
+                model_trainer_artifact_recumendation=recumendation_model_trainer_artifact
+            )
+            logging.info(f"Model trainer artifact: {model_trainer_artifact}")
+            return model_trainer_artifact
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e 
