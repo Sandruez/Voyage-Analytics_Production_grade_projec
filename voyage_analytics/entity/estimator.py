@@ -6,19 +6,6 @@ from voyage_analytics.exception import voyageAnalyticsException
 from voyage_analytics.logger import logging
 
 
-class TargetValueMapping:
-    def __init__(self):
-        self.Certified:int = 0
-        self.Denied:int = 1
-    def _asdict(self):
-        return self.__dict__
-    def reverse_mapping(self):
-        mapping_response = self._asdict()
-        return dict(zip(mapping_response.values(),mapping_response.keys()))
-    
-
-
-
 class RegModel:
     def __init__(self, preprocessing_object: ColumnTransformer, trained_model_object: object):
         """

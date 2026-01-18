@@ -29,7 +29,7 @@ class ModelEvaluation:
             self.data_ingestion_artifact = data_ingestion_artifact
             self.model_trainer_artifact = model_trainer_artifact
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e
 
     def get_best_model(self) -> Optional[USvisaEstimator]:
         """
