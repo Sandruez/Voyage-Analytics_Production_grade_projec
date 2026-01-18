@@ -1,22 +1,22 @@
 import sys
-from us_visa.exception import USvisaException
-from us_visa.logger import logging
-from us_visa.components.data_ingestion import DataIngestion
-from us_visa.components.data_validation import DataValidation
-from us_visa.components.data_transformation import DataTransformation
-from us_visa.components.model_trainer import ModelTrainer
-from us_visa.components.model_evaluation import ModelEvaluation
-from us_visa.components.model_pusher import ModelPusher
+from voyage_analytics.exception import VoyageAnalyticsException
+from voyage_analytics.logger import logging
+from voyage_analytics.components.data_ingestion import DataIngestion
+from voyage_analytics.components.data_validation import DataValidation
+from voyage_analytics.components.data_transformation import DataTransformation
+from voyage_analytics.components.model_trainer import ModelTrainer
+from voyage_analytics.components.model_evaluation import ModelEvaluation
+from voyage_analytics.components.model_pusher import ModelPusher
 
 
-from us_visa.entity.config_entity import (DataIngestionConfig,
+from voyage_analytics.entity.config_entity import (DataIngestionConfig,
                                          DataValidationConfig,
                                          DataTransformationConfig,
                                          ModelTrainerConfig,
                                          ModelEvaluationConfig,
                                          ModelPusherConfig)
 
-from us_visa.entity.artifact_entity import (DataIngestionArtifact,
+from voyage_analytics.entity.artifact_entity import (DataIngestionArtifact,
                                             DataValidationArtifact,
                                             DataTransformationArtifact,
                                             ModelTrainerArtifact,
@@ -39,9 +39,8 @@ class TrainPipeline:
         """
         This method of TrainPipeline class is responsible for starting data ingestion component
         """
-        try:
             logging.info("Entered the start_data_ingestion method of TrainPipeline class")
-            logging.info("Getting the data from mongodb")
+        try:
             data_ingestion = DataIngestion(data_ingestion_config=self.data_ingestion_config)
             data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
             logging.info("Got the train_set and test_set from mongodb")
@@ -49,8 +48,18 @@ class TrainPipeline:
                 "Exited the start_data_ingestion method of TrainPipeline class"
             )
             return data_ingestion_artifact
+        #     logging.info("Entered the start_data_ingestion method of TrainPipeline class")
+        #     logging.info("Getting the data from mongodb")
+        #     data_ingestion = DataIngestion(data_ingestion_config=self.data_ingestion_config)
+        #     data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+        #     logging.info("Got the train_set and test_set from mongodb")
+        #     logging.info(
+        #         "Exited the start_data_ingestion method of TrainPipeline class"
+        #     )
+        #     return data_ingestion_artifact
+        
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise  VoyageAnalyticsException(e, sys) from e
         
 
     
@@ -74,9 +83,22 @@ class TrainPipeline:
             )
 
             return data_validation_artifact
+        #     data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact,
+        #                                      data_validation_config=self.data_validation_config
+        #                                      )
+
+        #     data_validation_artifact = data_validation.initiate_data_validation()
+
+        #     logging.info("Performed the data validation operation")
+
+        #     logging.info(
+        #         "Exited the start_data_validation method of TrainPipeline class"
+        #     )
+
+        #     return data_validation_artifact
 
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e
         
 
 
@@ -91,7 +113,7 @@ class TrainPipeline:
             data_transformation_artifact = data_transformation.initiate_data_transformation()
             return data_transformation_artifact
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
         
 
     
@@ -107,14 +129,14 @@ class TrainPipeline:
             return model_trainer_artifact
 
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
         
     
 
     def start_model_evaluation(self, data_ingestion_artifact: DataIngestionArtifact,
                                model_trainer_artifact: ModelTrainerArtifact) -> ModelEvaluationArtifact:
         """
-        This method of TrainPipeline class is responsible for starting modle evaluation
+        This method of TrainPipeline class is responsible for starting model evaluation
         """
         try:
             model_evaluation = ModelEvaluation(model_eval_config=self.model_evaluation_config,
@@ -123,7 +145,7 @@ class TrainPipeline:
             model_evaluation_artifact = model_evaluation.initiate_model_evaluation()
             return model_evaluation_artifact
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
         
 
     
@@ -138,7 +160,7 @@ class TrainPipeline:
             model_pusher_artifact = model_pusher.initiate_model_pusher()
             return model_pusher_artifact
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
 
         
         
@@ -155,6 +177,7 @@ class TrainPipeline:
             data_transformation_artifact = self.start_data_transformation(
                 data_ingestion_artifact=data_ingestion_artifact, data_validation_artifact=data_validation_artifact)
             model_trainer_artifact = self.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
+            
             model_evaluation_artifact = self.start_model_evaluation(data_ingestion_artifact=data_ingestion_artifact,
                                                                     model_trainer_artifact=model_trainer_artifact)
             
@@ -164,5 +187,5 @@ class TrainPipeline:
             model_pusher_artifact = self.start_model_pusher(model_evaluation_artifact=model_evaluation_artifact)
 
         except Exception as e:
-            raise USvisaException(e, sys)
+            raise VoyageAnalyticsException(e, sys)
         
