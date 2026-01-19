@@ -187,42 +187,7 @@ class ModelTrainer:
             return model_trainer_artifact
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e   
-        
-
-   def initiate_recommendation_model_trainer(self, ) -> ModelTrainerArtifactRecommendation:
-        logging.info("Entered initiate_recommendation_model_trainer method of ModelTrainer class")
-        """
-        Method Name :   initiate_recommendation_model_trainer
-        Description :   This function initiates a model trainer steps
-        
-        Output      :   Returns model trainer artifact
-        On Failure  :   Write an exception log and then raise an exception
-        """
-        try:
-            train_arr = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_train_file_path)
-            test_arr = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_test_file_path) 
-            
-            best_model ,metric_artifact = self.get_classification_model_object_and_report(train=train_arr, test=test_arr)
-            preprocessing_obj = load_object(file_path=self.user_data_transformation_artifact.transformed_object_file_path)
-            
-            # if best_model.best_score < self.model_trainer_config.expected_accuracy:
-            #     logging.info("No best model found with score more than base score")
-            #     raise Exception("No best model found with score more than base score")
-            class_model = ClassificationModel(trained_model_object=best_model)
-            
-            logging.info("Created class model object with preprocessor and model")
-            logging.info("Created best model file path.")
-            save_object(self.model_trainer_config.trained_class_model_file_path , class_model)   
-            model_trainer_artifact = ModelTrainerArtifactClassification(
-                trained_model_file_path=self.model_trainer_config.trained_class_model_file_path,
-                metric_artifact=metric_artifact,
-            )
-            logging.info(f"Model trainer artifact: {model_trainer_artifact}")
-            return model_trainer_artifact
-        except Exception as e:
-            raise VoyageAnalyticsException(e, sys) from e   
-        
-
+    
 
     def initiate_reg_model_trainer(self, ) -> ModelTrainerArtifactRegression:
         logging.info("Entered initiate_model_trainer method of ModelTrainer class")

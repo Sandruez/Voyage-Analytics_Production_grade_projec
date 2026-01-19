@@ -114,6 +114,15 @@ class ModelTrainerArtifactRecumendation:
     trained_model_file_path:str 
     metric_artifact:RecumendationMetricArtifact
 
+
+@dataclass
+class ModelTrainerArtifact:
+    model_trainer_artifact_regression:ModelTrainerArtifactRegression,
+    model_trainer_artifact_classification:ModelTrainerArtifactClassification,
+    model_trainer_artifact_recumendation:ModelTrainerArtifactRecumendation
+
+
+
 @dataclass
 class ModelEvaluationArtifact:
     is_model_accepted:bool
