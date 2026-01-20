@@ -2,8 +2,10 @@ import json
 import sys
 
 import pandas as pd
-from evidently.model_profile import Profile
-from evidently.model_profile.sections import DataDriftProfileSection
+# --- UPDATED IMPORTS ---
+from evidently.report import Report
+from evidently.metric_preset import DataDriftPreset
+# -----------------------
 
 from pandas import DataFrame
 
@@ -13,7 +15,8 @@ from voyage_analytics.utils.main_utils import read_yaml_file, write_yaml_file
 from voyage_analytics.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
 from voyage_analytics.entity.config_entity import DataValidationConfig
 from voyage_analytics.entity.config_entity import SchemaConfig 
-
+# Added imports for the artifact subclasses implied by your code structure
+from voyage_analytics.entity.artifact_entity import DataValidationArtifactUsers, DataValidationArtifactFlights, DataValidationArtifactHotels
 
 
 class DataValidation:
@@ -28,8 +31,6 @@ class DataValidation:
             self.user_data_ingestion_artifact = data_ingestion_artifact.user_data_ingestion_artifact
             
             self.data_validation_config = data_validation_config
-           
-            
             
         except Exception as e:
             raise VoyageAnalyticsException(e,sys)
@@ -114,20 +115,31 @@ class DataValidation:
         On Failure  :   Write an exception log and then raise an exception
         """
         try:
-            data_drift_profile = Profile(sections=[DataDriftProfileSection()])
+            # --- NEW API IMPLEMENTATION ---
+            # 1. Initialize Report with DataDriftPreset
+            data_drift_profile = Report(metrics=[DataDriftPreset()])
 
-            data_drift_profile.calculate(reference_df, current_df)
+            # 2. Run the report (Replaces .calculate)
+            data_drift_profile.run(reference_data=reference_df, current_data=current_df)
 
-            report = data_drift_profile.json()
-            json_report = json.loads(report)
+            # 3. Get results as Dict (Evidently 0.4+ method)
+            # using as_dict() is more reliable than parsing raw JSON string in newer versions
+            report = data_drift_profile.as_dict()
+            
+            # 4. Save report to YAML (Keeping your logic)
+            write_yaml_file(file_path=getattr(self.data_validation_config,task), content=report)
 
-            write_yaml_file(file_path=getattr(self.data_validation_config,task), content=json_report)
+            # 5. Extract metrics from new structure
+            # The DataDriftPreset contains 'DatasetDriftMetric'. We find it in the list of metrics.
+            drift_metric_result = next(m['result'] for m in report['metrics'] if m['metric'] == 'DatasetDriftMetric')
 
-            n_features = json_report["data_drift"]["data"]["metrics"]["n_features"]
-            n_drifted_features = json_report["data_drift"]["data"]["metrics"]["n_drifted_features"]
+            n_features = drift_metric_result["number_of_columns"]
+            n_drifted_features = drift_metric_result["number_of_drifted_columns"]
+            drift_status = drift_metric_result["dataset_drift"]
+            
+            # --- END NEW IMPLEMENTATION ---
 
             logging.info(f"{n_drifted_features}/{n_features} drift detected.")
-            drift_status = json_report["data_drift"]["data"]["metrics"]["dataset_drift"]
             return drift_status
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
@@ -257,8 +269,8 @@ class DataValidation:
             data_validation_artifact = DataValidationArtifact(
                 user_data_validation_artifact=DataValidationArtifactUsers(
                     validation_status=user_validation_status,
-                    message=validation_error_msg,
-                    drift_report_file_path=getattr(self.data_validation_config,'class')
+                    message=user_validation_error_msg,
+                    drift_report_file_path=getattr(self.data_validation_config,'class_')
                 ),
                 flight_data_validation_artifact=DataValidationArtifactFlights(
                     validation_status=flight_validation_status,
@@ -275,4 +287,5 @@ class DataValidation:
             logging.info(f"Data validation artifact: {data_validation_artifact}")
             return data_validation_artifact
         except Exception as e:
-            raise USvisaException(e, sys) from e    
+            # Replaced "USvisaException" with your project's exception class to fix the copy-paste bug
+            raise VoyageAnalyticsException(e, sys) from e

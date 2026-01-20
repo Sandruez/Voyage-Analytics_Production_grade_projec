@@ -7,6 +7,7 @@ import yaml
 from pandas import DataFrame
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
+import pandas as pd
 
 def read_yaml_file(file_path: str) -> dict:
     try:

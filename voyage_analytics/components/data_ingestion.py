@@ -123,24 +123,25 @@ class DataIngestion:
 
             logging.info("Got the data from mongodb")
 
-            self.split_data_as_train_test(users_dataframe,"users",self.data_ingestion_config.users_training_file_path,self.data_ingestion_config.users_testing_file_path)
-            self.split_data_as_train_test(flights_dataframe,"flights",self.data_ingestion_config.flights_training_file_path,self.data_ingestion_config.flights_testing_file_path)
-            self.split_data_as_train_test(hotels_dataframe,"hotels",self.data_ingestion_config.hotels_training_file_path,self.data_ingestion_config.hotels_testing_file_path)
+            self.split_data_as_train_test(users_dataframe,"users",self.data_ingestion_config.class_training_file_path,self.data_ingestion_config.class_testing_file_path)
+            self.split_data_as_train_test(flights_dataframe,"flights",self.data_ingestion_config.reg_training_file_path,self.data_ingestion_config.reg_testing_file_path)
+            self.split_data_as_train_test(hotels_dataframe,"hotels",self.data_ingestion_config.recumend_training_file_path,self.data_ingestion_config.recumend_testing_file_path)
             logging.info("Performed train test split on the datasets")
 
             logging.info(
                 "Exited initiate_data_ingestion method of Data_Ingestion class"
             )
 
-            user_data_ingestion_artifact = DataIngestionArtifactUsers(trained_file_path=self.data_ingestion_config.users_training_file_path,
-            test_file_path=self.data_ingestion_config.users_testing_file_path)
+            user_data_ingestion_artifact = DataIngestionArtifactUsers(trained_file_path=self.data_ingestion_config.class_training_file_path,
+            test_file_path=self.data_ingestion_config.class_testing_file_path)
             logging.info(f"User Data ingestion artifact: {user_data_ingestion_artifact}")
             
-            flight_data_ingestion_artifact = DataIngestionArtifactflights(trained_file_path=self.data_ingestion_config.flights_training_file_path,
-            test_file_path=self.data_ingestion_config.flights_testing_file_path)
+            flight_data_ingestion_artifact = DataIngestionArtifactFlights(trained_file_path=self.data_ingestion_config.reg_training_file_path,
+            test_file_path=self.data_ingestion_config.reg_testing_file_path)
             logging.info(f"Flight Data ingestion artifact: {flight_data_ingestion_artifact}")   
-            hotel_data_ingestion_artifact = DataIngestionArtifactHotels(trained_file_path=self.data_ingestion_config.hotels_training_file_path,
-            test_file_path=self.data_ingestion_config.hotels_testing_file_path) 
+            
+            hotel_data_ingestion_artifact = DataIngestionArtifactHotels(trained_file_path=self.data_ingestion_config.recumend_training_file_path,
+            test_file_path=self.data_ingestion_config.recumend_testing_file_path) 
             logging.info(f"Hotel Data ingestion artifact: {hotel_data_ingestion_artifact}")
 
             data_ingestion_artifact = DataIngestionArtifact(

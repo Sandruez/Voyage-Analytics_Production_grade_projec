@@ -12,10 +12,19 @@ from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 from voyage_analytics.utils.main_utils import load_numpy_array_data, read_yaml_file, load_object, save_object,load_csv_data
 from voyage_analytics.entity.config_entity import ModelTrainerConfig
-from voyage_analytics.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact,RegressionMetricArtifact,ClassificationMetricArtifact,RecumendationMetricArtifact
+from voyage_analytics.entity.artifact_entity import (DataTransformationArtifact,
+                                                     ModelTrainerArtifact,
+                                                     ModelTrainerArtifactRegression,
+                                                     ModelTrainerArtifactClassification,
+                                                     ModelTrainerArtifactRecomendation,
+                                                     ClassificationMetricArtifact,
+                                                     RegressionMetricArtifact,
+                                                     RecumendationMetricArtifact
+                                                     )
 
 from voyage_analytics.entity.estimator import RegModel
 from voyage_analytics.entity.estimator import ClassificationModel
+from voyage_analytics.entity.estimator import RecumendationModel
 
 from voyage_analytics.constants import TARGET_COLUMN_USERS
 from sklearn.pipeline import make_pipeline
@@ -77,11 +86,8 @@ class ModelTrainer:
         Output      :   Returns metric artifact object and best model object
         On Failure  :   Write an exception log and then raise an exception
         """
-    #     try:
-    
-    #         transformed_object_file_path:str 
-    # transformed_train_file_path:str
-    # transformed_test_file_path:str
+        try:
+            
 
             x_train, y_train, x_test, y_test = train_df.drop(columns=[TARGET_COLUMN_USERS], axis=1), train_df[TARGET_COLUMN_USERS], test_df.drop(columns=[TARGET_COLUMN_USERS], axis=1), test_df[TARGET_COLUMN_USERS]
 
@@ -89,17 +95,24 @@ class ModelTrainer:
             CountVectorizer(analyzer='char_wb', ngram_range=(2, 4)),
             MultinomialNB()
             )
+            x_train.reset_index(drop=True)
+            y_train.reset_index(drop=True)
+            x_test.reset_index(drop=True)
+            y_test.reset_index(drop=True)
+            
             logging.info("initiating training the classification model")
-            model.fit(x_train, y_train)
+            logging.info(f"shape of train_df {x_train.shape},{y_train.shape} and test_df {x_test.shape},{y_test.shape}")
+            
+            model.fit(x_train.iloc[:, 0], y_train)
             model_obj = model
             logging.info("trained the classification model")
 
-            y_pred = model_obj.predict(x_test)
+            y_pred = model_obj.predict(x_test.iloc[:,0])
             metric_artifact = ClassificationMetricArtifact(
-                accuracy_score=accuracy_score(y_true=y_test, y_pred=y_pred),
-                precision_score=precision_score(y_true=y_test, y_pred=y_pred),
-                recall_score=recall_score(y_true=y_test, y_pred=y_pred),
-                f1_score=f1_score(y_true=y_test, y_pred=y_pred),
+                accuracy_score = accuracy_score(y_test, y_pred),
+                precision_score = precision_score(y_test, y_pred, average='weighted'),
+                recall_score = recall_score(y_test, y_pred, average='weighted'),
+                f1_score = f1_score(y_test, y_pred, average='weighted')
             )
             return model_obj, metric_artifact
         except Exception as e:
@@ -129,7 +142,7 @@ class ModelTrainer:
             raise VoyageAnalyticsException(e, sys) from e
         
 
-   def initiate_recommendation_model_trainer(self, ) -> ModelTrainerArtifactRecommendation: 
+    def initiate_recommendation_model_trainer(self, ) -> ModelTrainerArtifactRecomendation: 
         logging.info("Entered initiate_recommendation_model_trainer method of ModelTrainer class")
         """
         Method Name :   initiate_recommendation_model_trainer
@@ -140,22 +153,25 @@ class ModelTrainer:
         """
         try:
             profile_matrix_arr = load_numpy_array_data(file_path=self.hotel_data_transformation_artifact.transformed_hotel_features_matrix_arr_file_path)
-            
-            best_model ,_ = self.get_recommendation_model_object_and_report(train=profile_matrix_arr)
+            hotel_profiles_df=load_csv_data(file_path=self.hotel_data_transformation_artifact.transformed_hotel_data_profile_df_file_path)
+            best_model ,_ = self.get_recommendation_model_object_and_report(train_arr=profile_matrix_arr)
             
             logging.info("Created best model file path.")
             
+            best_model=RecumendationModel(trained_model_object=best_model,hotel_profiles=hotel_profiles_df, hotel_features_matrix=profile_matrix_arr)
             
-            save_object(self.model_trainer_config.trained_recommendation_model_file_path , best_model)   
-            model_trainer_artifact = ModelTrainerArtifactRecommendation(
-                trained_model_file_path=self.model_trainer_config.trained_recommendation_model_file_path,
+            save_object(self.model_trainer_config.trained_recumend_model_file_path , best_model)   
+            model_trainer_artifact = ModelTrainerArtifactRecomendation(
+                trained_model_file_path=self.model_trainer_config.trained_recumend_model_file_path,
                 metric_artifact=None,
             )
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
             return model_trainer_artifact
+        except Exception as e:
+            raise VoyageAnalyticsException(e, sys) from e   
 
 
-   def initiate_classification_model_trainer(self, ) -> ModelTrainerArtifactClassification:
+    def initiate_classification_model_trainer(self, ) -> ModelTrainerArtifactClassification:
         logging.info("Entered initiate_classification_model_trainer method of ModelTrainer class")
         """
         Method Name :   initiate_classification_model_trainer
@@ -165,11 +181,11 @@ class ModelTrainer:
         On Failure  :   Write an exception log and then raise an exception
         """
         try:
-            train_arr = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_train_file_path)
-            test_arr = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_test_file_path) 
+            train_df = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_train_file_path)
+            test_df = load_csv_data(file_path=self.user_data_transformation_artifact.transformed_test_file_path) 
             
-            best_model ,metric_artifact = self.get_classification_model_object_and_report(train=train_arr, test=test_arr)
-            preprocessing_obj = load_object(file_path=self.user_data_transformation_artifact.transformed_object_file_path)
+            best_model ,metric_artifact = self.get_classification_model_object_and_report(train_df=train_df, test_df=test_df)
+            preprocessing_obj = None
             
             # if best_model.best_score < self.model_trainer_config.expected_accuracy:
             #     logging.info("No best model found with score more than base score")
@@ -223,7 +239,7 @@ class ModelTrainer:
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
             return model_trainer_artifact
         except Exception as e:
-            raise USvisaException(e, sys) from e
+            raise VoyageAnalyticsException(e, sys) from e
         
         
     def initiate_model_trainer(self) -> ModelTrainerArtifact:

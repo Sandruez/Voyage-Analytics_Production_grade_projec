@@ -2,7 +2,7 @@ import sys
 
 from pandas import DataFrame
 from sklearn.compose  import ColumnTransformer
-from voyage_analytics.exception import voyageAnalyticsException
+from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 
 
