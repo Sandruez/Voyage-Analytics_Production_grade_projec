@@ -199,6 +199,7 @@ class ModelTrainer:
                 trained_model_file_path=self.model_trainer_config.trained_class_model_file_path,
                 metric_artifact=metric_artifact,
             )
+            logging.info(f"Classification evalution metrices:{metric_artifact}")
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
             return model_trainer_artifact
         except Exception as e:
@@ -236,6 +237,7 @@ class ModelTrainer:
                 trained_model_file_path=self.model_trainer_config.trained_reg_model_file_path,
                 metric_artifact=metric_artifact,
             )
+            logging.info(f"Regression evalution metrices:{metric_artifact}")
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
             return model_trainer_artifact
         except Exception as e:

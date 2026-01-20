@@ -356,7 +356,7 @@ class DataTransformation:
                 logging.info("Used the preprocessor object to fit transform the train features")
 
                 input_feature_test_arr = preprocessor.transform(input_feature_test_df)
-
+                logging.info(f"For preprocessing and predictions,Order of features in test_df for regression task: {input_feature_test_df.columns} ")
                 # 7. Final Arrays
                 input_feature_train_final = input_feature_train_arr
                 target_feature_train_final = target_feature_train_df.values

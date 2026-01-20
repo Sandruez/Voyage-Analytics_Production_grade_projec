@@ -96,7 +96,7 @@ class DataTransformationConfig:
                                                      PREPROCSSING_OBJECT_RECUMENDATION_FILE_NAME)
 
 
-
+# artifact\01_20_2026_19_34_29\model_trainer\trained_model\regression
 @dataclass
 class ModelTrainerConfig:
     model_trainer_dir: str = os.path.join(training_pipeline_config.artifact_dir, MODEL_TRAINER_DIR_NAME)

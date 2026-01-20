@@ -15,7 +15,7 @@ class RegModel:
         self.preprocessing_object = preprocessing_object
         self.trained_model_object = trained_model_object
 
-    def predict(self, dataframe: DataFrame) -> DataFrame:
+    def predict(self, dataframe: DataFrame) -> object:
         """
         Function accepts raw inputs and then transformed raw input using preprocessing_object
         which guarantees that the inputs are in the same format as the training data
@@ -61,7 +61,7 @@ class ClassificationModel:
             logging.info("Using the trained model to get predictions")
 
             logging.info("Used the trained model to get predictions")
-            return self.trained_model_object.predict(dataframe)
+            return self.trained_model_object.predict(dataframe.iloc[:,0])
 
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
@@ -92,17 +92,17 @@ class RecumendationModel:
         try:
                     # 1. Find the index of the hotel
             try:
-                idx = hotel_profiles[hotel_profiles['name'] == hotel_name].index[0]
-            except IndexError:
-                return "Hotel not found."
+                idx = self.hotel_profiles[self.hotel_profiles['name'] == hotel_name].index[0]
+            except Exception as e:
+                raise VoyageAnalyticsException(e, sys) from e
 
             # 2. Find nearest neighbors
-            distances, indices = trained_model_object.kneighbors([hotel_features_matrix[idx]])
+            distances, indices = self.trained_model_object.kneighbors([self.hotel_features_matrix[idx]])
 
             # 3. Return results (Skip first one because it's the hotel itself)
             similar_indices = indices[0][1:]
 
-            return hotel_profiles.iloc[similar_indices][['name', 'place', 'price', 'popularity']]
+            return self.hotel_profiles.iloc[similar_indices][['name', 'place', 'price', 'popularity']]
             logging.info("Using the trained model to get predictions")
         
         except Exception as e:
