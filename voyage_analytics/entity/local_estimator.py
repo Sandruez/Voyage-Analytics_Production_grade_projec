@@ -9,14 +9,14 @@ from pandas import DataFrame
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 import pandas as pd
-# from voyage_analytics.entity.artifact_entity import ModelTrainerArtifact 
+from voyage_analytics.entity.artifact_entity import ModelTrainerArtifact 
 
 class Local_Estimator_Class:
-    def __init__(self,):
+    def __init__(self,model_trainer_artifact:ModelTrainerArtifact):
         try:
-            self.trained_reg_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/regression/model.pkl'
-            self.trained_class_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/classification/model.pkl'
-            self.trained_recumend_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/recumendation/model.pkl'
+            self.trained_reg_model_file_path=model_trainer_artifact.model_trainer_artifact_regression.trained_model_file_path
+            self.trained_class_model_file_path=model_trainer_artifact.model_trainer_artifact_classification.trained_model_file_path
+            self.trained_recumend_model_file_path=model_trainer_artifact.model_trainer_artifact_recumendation.trained_model_file_path
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
     

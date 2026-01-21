@@ -17,9 +17,7 @@ from voyage_analytics.entity.local_estimator import Local_Estimator_Class
 
 # --- SETUP ---
 # Initialize the model once. If this takes a long time, the server won't start immediately.
-print("Loading Model...") 
-local_estimator = Local_Estimator_Class()  
-print("Model Loaded.")
+
 
 app = FastAPI()
 
@@ -111,6 +109,36 @@ class DataForm:
 async def index(request: Request):
     # Ensure your HTML file is named 'usvisa.html' and is inside a 'templates' folder
     return templates.TemplateResponse("usvisa.html", {"request": request, "context": "Rendering"})
+
+
+# @app.get("/", tags=["authentication"])
+# async def index(request: Request):
+
+#     return templates.TemplateResponse(
+#             "usvisa.html",{"request": request, "context": "Rendering"})
+
+
+from voyage_analytics.pipline.training_pipeline import TrainPipeline
+model_trained_artifact:object=None
+local_estimator:object=None 
+
+
+
+
+@app.get("/train")
+async def trainRouteClient():
+    try:
+        train_pipeline = TrainPipeline()
+        global model_trained_artifact 
+        model_trained_artifact = train_pipeline.run_pipeline()
+        global local_estimator
+        local_estimator=Local_Estimator_Class(model_trained_artifact)
+        return Response("Training successful !!")
+
+    except Exception as e:
+        return Response(f"Error Occurred! {e}")
+
+
 
 @app.post("/predict_flight")
 async def predict_flight(request: Request):
