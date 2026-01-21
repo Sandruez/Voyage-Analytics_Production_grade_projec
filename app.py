@@ -1,34 +1,27 @@
-
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.responses import HTMLResponse, RedirectResponse
-from uvicorn import run as app_run
-
-from typing import Optional
-
-from voyage_analytics.constants import APP_HOST, APP_PORT
-from voyage_analytics.pipline.prediction_pipeline import USvisaData, USvisaClassifier
-from voyage_analytics.pipline.training_pipeline import TrainPipeline
 from fastapi import FastAPI, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import Response, HTMLResponse
+# Import run_in_threadpool to fix the timeout/blocking issue
+from fastapi.concurrency import run_in_threadpool 
 from uvicorn import run as app_run
 from typing import Optional
 import pandas as pd
 from datetime import datetime
+import json
 
-# --- CONFIGURATION & SETUP ---
+# Assuming these exist in your project structure
+from voyage_analytics.constants import APP_HOST, APP_PORT
+from voyage_analytics.entity.local_estimator import Local_Estimator_Class
 
+# --- SETUP ---
+# Initialize the model once. If this takes a long time, the server won't start immediately.
+print("Loading Model...") 
+local_estimator = Local_Estimator_Class()  
+print("Model Loaded.")
 
 app = FastAPI()
-
-# Mount static files (ensure you have a 'static' folder or create one)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory='templates')
 
@@ -40,8 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- MOCK PREDICTION CLASSES (Replace with your actual voyage_analytics imports) ---
-
+# --- HELPER CLASSES (Kept same as your code) ---
 class FlightData:
     def __init__(self, from_loc, to_loc, flight_type, time, distance, agency, date):
         self.from_loc = from_loc
@@ -50,7 +42,6 @@ class FlightData:
         self.time = time
         self.distance = distance
         self.agency = agency
-        # Convert date to day name (e.g., "Monday")
         try:
             dt = datetime.strptime(date, "%Y-%m-%d")
             self.day = dt.strftime("%A")
@@ -58,7 +49,6 @@ class FlightData:
             self.day = "Monday"
 
     def get_data_as_dataframe(self):
-        # Order matches Prompt Requirement #7
         data = {
             "from": [self.from_loc],
             "to": [self.to_loc],
@@ -69,25 +59,11 @@ class FlightData:
             "day": [self.day]
         }
         return pd.DataFrame(data)
-    
-class GenderData:
-    def __init__(self, name, context):
-        self.name = name
-        self.context = context
-
-class HotelData:
-    def __init__(self, hotel_name, days, price_pref, pop_pref):
-        self.hotel_name = hotel_name
-        self.days = days
-        self.price_pref = price_pref
-        self.pop_pref = pop_pref
-
-# --- REQUEST PARSING CLASS ---
 
 class DataForm:
     def __init__(self, request: Request):
         self.request: Request = request
-        # Flight Attributes
+        # ... (Your existing attributes) ...
         self.travel_code: Optional[int] = None
         self.from_loc: Optional[str] = None
         self.to_loc: Optional[str] = None
@@ -97,10 +73,8 @@ class DataForm:
         self.distance: Optional[float] = None
         self.agency: Optional[str] = None
         self.date: Optional[str] = None
-        # Gender Attributes
         self.full_name: Optional[str] = None
         self.context: Optional[str] = None
-        # Hotel Attributes
         self.hotel_name: Optional[str] = None
         self.days: Optional[int] = None
         self.price_pref: Optional[str] = None
@@ -112,7 +86,6 @@ class DataForm:
         self.from_loc = form.get("from", "Unknown")
         self.to_loc = form.get("to", "Unknown")
         self.flight_type = form.get("flightType", "Unknown")
-        # target variable
         self.price = float(form.get("price", 0.0))
         self.time = float(form.get("time", 0.0))
         self.distance = float(form.get("distance", 0.0))
@@ -126,16 +99,18 @@ class DataForm:
 
     async def get_hotel_data(self):
         form = await self.request.form()
-        self.hotel_name = form.get("hotelSelect", "").split(',')[0] # Take only name if value is complex
+        self.hotel_name = form.get("hotelSelect", "").split(',')[0]
         self.days = int(form.get("stayDays", 1))
         self.price_pref = form.get("pricePref", "Any")
         self.pop_pref = form.get("popPref", "Any")
 
+
 # --- ROUTES ---
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", tags=["authentication"], response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("usvisa.html", {"request": request})
+    # Ensure your HTML file is named 'usvisa.html' and is inside a 'templates' folder
+    return templates.TemplateResponse("usvisa.html", {"request": request, "context": "Rendering"})
 
 @app.post("/predict_flight")
 async def predict_flight(request: Request):
@@ -143,7 +118,6 @@ async def predict_flight(request: Request):
         form = DataForm(request)
         await form.get_flight_data()
         
-        # 1. Prepare Data
         flight_data = FlightData(
             from_loc=form.from_loc,
             to_loc=form.to_loc,
@@ -154,17 +128,17 @@ async def predict_flight(request: Request):
             date=form.date
         )
         
-        # 2. Get DataFrame (This matches the order requested in Prompt #7)
         df = flight_data.get_data_as_dataframe()
         
-        # 3. Simulate Prediction (Replace with actual model call)
-        # model = FlightModelLoader()
-        # prediction = model.predict(df)
-        prediction_result = f"${form.price * 1.12:.2f}" # Dummy logic
+        # --- FIX: Use run_in_threadpool for blocking ML inference ---
+                
+        
+        prediction_result = local_estimator.regression_predict_func(df)[0]
+        prediction_result = float(prediction_result)
 
         response_payload = {
             "task": "flight_price_prediction",
-            "input_received": df.to_dict(orient="records")[0],
+            "input_received": df.to_dict(),
             "prediction": prediction_result
         }
         
@@ -181,8 +155,10 @@ async def predict_gender(request: Request):
         form = DataForm(request)
         await form.get_gender_data()
         
-        # Logic
-        gender = "Female" if form.full_name.lower().endswith(('a', 'e', 'i')) else "Male" # Mock Logic
+        df = pd.DataFrame({'name': [form.full_name]})
+        
+        # --- FIX: Use run_in_threadpool ---
+        gender = str(local_estimator.classification_predict_func(df)[0])
         
         response_payload = {
             "task": "gender_classification",
@@ -203,13 +179,12 @@ async def recommend_hotel(request: Request):
         form = DataForm(request)
         await form.get_hotel_data()
         
-        # Simulated Recommendations
-        recommendations = [
-            {"name": "Simulated Hotel 1", "place": "Rio", "price": 200, "days": form.days, "pop": "High"},
-            {"name": "Simulated Hotel 2", "place": "Mumbai", "price": 150, "days": form.days, "pop": "Medium"},
-            {"name": "Simulated Hotel 3", "place": "London", "price": 300, "days": form.days, "pop": "Low"},
-        ]
+        # --- FIX: Use run_in_threadpool ---
+        # Note: We must pass the function and arguments separately
+        recommendations_df = local_estimator.recommendation_predict_func(form.hotel_name)
         
+        # orient="records" makes it easy to loop in HTML
+        recommendations = recommendations_df.reset_index(drop=True).to_dict(orient="records")
         response_payload = {
             "task": "hotel_recommendation",
             "selected_hotel": form.hotel_name,
@@ -225,4 +200,8 @@ async def recommend_hotel(request: Request):
         return templates.TemplateResponse("usvisa.html", {"request": request, "error": str(e)})
 
 if __name__ == "__main__":
-    app_run(app, host=APP_HOST, port=APP_PORT)
+    # Ensure Host is 0.0.0.0 to listen on all interfaces (fixes connection timeouts)
+    # If APP_HOST is imported, make sure it is valid, otherwise default to "0.0.0.0"
+    
+    port = int(APP_PORT) if APP_PORT else 8000
+    app_run(app, host='127.0.0.1', port=port)

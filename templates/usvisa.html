@@ -17,11 +17,13 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Voyage Analytics | Data Entry Interface</span>
+    <header>
+        <div class="container text-center">
+            <h1>Voyage Analytics Interface</h1>
+            <p class="lead text-muted">Unified Data Entry & Recommendation System</p>
         </div>
-    </nav>
+    </header>
+
 
     <div class="container">
         
@@ -53,27 +55,39 @@
                         <div class="col-md-6">
                             <label class="form-label">From</label>
                             <select name="from" class="form-select" required>
-                                <option value="NYC">NYC</option>
-                                <option value="LON">LON</option>
-                                <option value="SFO">SFO</option>
-                                <option value="BOM">BOM</option>
-                                <option value="Recife">Recife</option>
+                                <option value="" selected disabled>Select a city</option>
+                                <option value="Florianopolis (SC)">Florianopolis (SC)</option>
+                                <option value="Aracaju (SE)">Aracaju (SE)</option>
+                                <option value="Natal (RN)">Natal (RN)</option>
+                                <option value="Brasilia (DF)">Brasilia (DF)</option>
+                                <option value="Salvador (BH)">Salvador (BH)</option>
+                                <option value="Campo Grande (MS)">Campo Grande (MS)</option>
+                                <option value="Sao Paulo (SP)">Sao Paulo (SP)</option>
+                                <option value="Recife (PE)">Recife (PE)</option>
+                                <option value="Rio de Janeiro (RJ)">Rio de Janeiro (RJ)</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">To</label>
                             <select name="to" class="form-select" required>
-                                <option value="Florianopolis">Florianopolis</option>
-                                <option value="NYC">NYC</option>
-                                <option value="LON">LON</option>
+                                <option value="" disabled selected>Select a destination</option>
+                                <option value="Sao Paulo (SP)">Sao Paulo (SP)</option>
+                                <option value="Campo Grande (MS)">Campo Grande (MS)</option>
+                                <option value="Florianopolis (SC)">Florianopolis (SC)</option>
+                                <option value="Brasilia (DF)">Brasilia (DF)</option>
+                                <option value="Recife (PE)">Recife (PE)</option>
+                                <option value="Natal (RN)">Natal (RN)</option>
+                                <option value="Aracaju (SE)">Aracaju (SE)</option>
+                                <option value="Salvador (BH)">Salvador (BH)</option>
+                                <option value="Rio de Janeiro (RJ)">Rio de Janeiro (RJ)</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Flight Type</label>
                             <select name="flightType" class="form-select" required>
-                                <option value="Economy">Economy</option>
-                                <option value="Business">Business</option>
-                                <option value="First">First</option>
+                                <option value="premium">Economy</option>
+                                <option value="economic">Business</option>
+                                <option value="firstClass">First</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -179,9 +193,7 @@
     </div>
     <script>
         // Scroll to active result if present
-        {% if active_tab %}
-            document.getElementById("{{ active_tab }}-section").scrollIntoView();
-        {% endif %}
+        
     </script>
 </body>
 </html>

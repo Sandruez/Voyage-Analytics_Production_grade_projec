@@ -165,7 +165,7 @@ class TrainPipeline:
         
 
     
-    def run_pipeline(self, ) -> None:
+    def run_pipeline(self, ) -> object:
         """
         This method of TrainPipeline class is responsible for running complete pipeline
         """
@@ -176,7 +176,7 @@ class TrainPipeline:
                 data_ingestion_artifact=data_ingestion_artifact, data_validation_artifact=data_validation_artifact)
             model_trainer_artifact = self.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
             
-            
+            return model_trainer_artifact
             # model_evaluation_artifact = self.start_model_evaluation(data_ingestion_artifact=data_ingestion_artifact,
             #                                                         model_trainer_artifact=model_trainer_artifact)
             

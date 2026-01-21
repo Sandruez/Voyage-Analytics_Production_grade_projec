@@ -9,15 +9,14 @@ from pandas import DataFrame
 from voyage_analytics.exception import VoyageAnalyticsException
 from voyage_analytics.logger import logging
 import pandas as pd
-from voyage_analytics.entity.config_entity import ModelTrainerConfig 
+# from voyage_analytics.entity.artifact_entity import ModelTrainerArtifact 
 
 class Local_Estimator_Class:
-    def __init__(self,model_trainer_config:ModelTrainerConfig=ModelTrainerConfig()):
+    def __init__(self,):
         try:
-            self.trained_reg_model_file_path=model_trainer_config.trained_reg_model_file_path
-            self.trained_class_model_file_path=model_trainer_config.trained_class_model_file_path
-            self.trained_recumend_model_file_path=model_trainer_config.trained_recumend_model_file_path
-
+            self.trained_reg_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/regression/model.pkl'
+            self.trained_class_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/classification/model.pkl'
+            self.trained_recumend_model_file_path='artifact/01_21_2026_02_32_38/model_trainer/trained_model/recumendation/model.pkl'
         except Exception as e:
             raise VoyageAnalyticsException(e, sys) from e
     
@@ -43,7 +42,7 @@ class Local_Estimator_Class:
             logging.info("Initialisation of reg_predict_func for flight price predictions")
             logging.info(f"Loading model object from {self.trained_reg_model_file_path}")
             
-            model_obj=self.load_object('artifact/01_20_2026_19_59_04/model_trainer/trained_model/regression/model.pkl')
+            model_obj=self.load_object(self.trained_reg_model_file_path)
             # return a object type value..
             preds=model_obj.predict(dataframe=test_df)
             return preds
@@ -57,7 +56,7 @@ class Local_Estimator_Class:
             logging.info("Initialisation of reg_predict_func for flight price predictions")
             logging.info(f"Loading model object from {self.trained_class_model_file_path}")
             
-            model_obj=self.load_object('artifact/01_20_2026_19_59_04/model_trainer/trained_model/classification/model.pkl')
+            model_obj=self.load_object(self.trained_class_model_file_path)
             
             #return a object type value.'.
             preds=model_obj.predict(names_df)
@@ -73,7 +72,7 @@ class Local_Estimator_Class:
             logging.info("Initialisation of reg_predict_func for flight price predictions")
             logging.info(f"Loading model object from {self.trained_recumend_model_file_path}")
             
-            model_obj=self.load_object('artifact/01_20_2026_19_59_04/model_trainer/trained_model/recumendation/model.pkl')
+            model_obj=self.load_object(self.trained_recumend_model_file_path)
             
             #return a object type value..
             preds=model_obj.predict(hotel_name)

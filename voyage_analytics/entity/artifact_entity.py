@@ -119,7 +119,7 @@ class ModelTrainerArtifactRecomendation:
 class ModelTrainerArtifact:
     model_trainer_artifact_regression:ModelTrainerArtifactRegression
     model_trainer_artifact_classification:ModelTrainerArtifactClassification
-    model_trainer_artifact_recumendation:ModelTrainerArtifactRecumendation
+    model_trainer_artifact_recumendation:ModelTrainerArtifactRecomendation
 
 
 

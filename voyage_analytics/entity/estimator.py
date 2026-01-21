@@ -1,5 +1,5 @@
 import sys
-
+import numpy as np
 from pandas import DataFrame
 from sklearn.compose  import ColumnTransformer
 from voyage_analytics.exception import VoyageAnalyticsException
@@ -74,7 +74,7 @@ class ClassificationModel:
     
     
 class RecumendationModel:
-    def __init__(self,trained_model_object: object, hotel_profiles: DataFrame, hotel_features_matrix: np.ndarrays):
+    def __init__(self,trained_model_object: object, hotel_profiles: DataFrame, hotel_features_matrix: np.ndarray):
         """
         :param preprocessing_object: Input Object of preprocesser
         :param trained_model_object: Input Object of trained model 
